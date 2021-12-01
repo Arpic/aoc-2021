@@ -7,7 +7,17 @@ fun main() {
     }
 
     fun part2(input: List<String>): Int {
-        return input.size
+        var previousSum = Int.MAX_VALUE
+        var increased = 0
+        val inputInt = input.stream().mapToInt(String::toInt).toList()
+        for (i in 0 until inputInt.size - 2) {
+            val sum = inputInt[i] + inputInt[i+1] + inputInt[i+2]
+            if (sum > previousSum) {
+                increased++
+            }
+            previousSum = sum
+        }
+        return increased
     }
 
     // test if implementation meets criteria from the description, like:
