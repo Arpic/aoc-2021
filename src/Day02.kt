@@ -1,7 +1,7 @@
 fun main() {
     fun parseCommand(command: String): Command {
         val commandArray = command.split(" ")
-        return Command(commandArray[0], commandArray[1].toInt())
+        return Command(Direction.valueOf(commandArray[0].uppercase()), commandArray[1].toInt())
     }
 
     fun moveSubmarine(input: List<String>): Int {
@@ -12,31 +12,40 @@ fun main() {
     }
 
     val testInput = readInput("Day02_test")
-    check(moveSubmarine(testInput) == 150)
+    check(moveSubmarine(testInput) == 900)
 
     val input = readInput("Day02")
     println(moveSubmarine(input))
 }
 
-data class Command(val direction: String, val value: Int)
+data class Command(val direction: Direction, val value: Int)
+
+enum class Direction {
+    FORWARD,
+    DOWN,
+    UP
+}
 
 class Submarine {
     private var depth = 0
     private var position = 0
+    private var aim = 0
     val result: Int
         get() = depth * position
 
     fun executeCommand(command: Command) {
-        when {
-            command.direction.equals("forward", true) -> {
+        when (command.direction) {
+            Direction.FORWARD -> {
                 position += command.value
+                depth += aim * command.value
             }
-            command.direction.equals("down", true) -> {
-                depth += command.value
+            Direction.DOWN  -> {
+                aim += command.value
             }
-            command.direction.equals("up", true) -> {
-                depth -= command.value
+            Direction.UP  -> {
+                aim -= command.value
             }
         }
     }
+
 }
