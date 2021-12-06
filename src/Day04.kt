@@ -4,6 +4,7 @@ class Matrix {
     private val data: MutableList<List<Int>> = mutableListOf()
     private val marked: MutableList<MutableList<Boolean>> = MutableList(5) { MutableList(5) { false } }
     private val size = 5
+    var hasWon = false
 
     fun addRow(row: List<Int>) {
         data.add(row)
@@ -16,6 +17,7 @@ class Matrix {
                 if (row[j] == drawnNumber) {
                     marked[i][j] = true
                     if (isRowOrColumnFullyMarked(i, j)) {
+                        hasWon = true
                         return true
                     }
                 }
@@ -45,9 +47,7 @@ fun main() {
     fun readLine(input: String, separator: Regex) =
         input.split(separator).stream().mapToInt(String::toInt).toList()
 
-    fun part1(input: List<String>): Int {
-        val mutableInput = input.toMutableList()
-        val drawnNumbers = readLine(mutableInput.removeFirst(), ",".toRegex())
+    fun readInputMatrices(mutableInput: MutableList<String>): MutableList<Matrix> {
         var currentMatrix: Matrix? = null
         val matrixes: MutableList<Matrix> = mutableListOf()
         for (i in mutableInput.indices) {
@@ -58,13 +58,18 @@ fun main() {
                 currentMatrix = Matrix()
             }
         }
+        return matrixes
+    }
+
+    fun part1(input: List<String>): Int {
+        val mutableInput = input.toMutableList()
+        val drawnNumbers = readLine(mutableInput.removeFirst(), ",".toRegex())
+        val matrices: MutableList<Matrix> = readInputMatrices(mutableInput)
 
         for (i in drawnNumbers) {
-            matrixes.forEach {
+            matrices.forEach {
                 if (it.markNumber(i)) {
-                    val get = it.unmarkedNumbers().stream().reduce { a, b -> a + b }.get()
-                    println(get)
-                    return i * get
+                    return i * it.unmarkedNumbers().stream().reduce { a, b -> a + b }.get()
                 }
             }
         }
@@ -72,26 +77,29 @@ fun main() {
     }
 
     fun part2(input: List<String>): Int {
-        var previousSum = Int.MAX_VALUE
-        var increased = 0
-        val inputInt = input.stream().mapToInt(String::toInt).toList()
-        for (i in 0 until inputInt.size - 2) {
-            val sum = inputInt[i] + inputInt[i+1] + inputInt[i+2]
-            if (sum > previousSum) {
-                increased++
+        val mutableInput = input.toMutableList()
+        val drawnNumbers = readLine(mutableInput.removeFirst(), ",".toRegex())
+        val matrices: MutableList<Matrix> = readInputMatrices(mutableInput)
+        val winningMatrices: MutableList<Pair<Int, Matrix>> = mutableListOf()
+        for (i in drawnNumbers) {
+            matrices.forEach {
+                if (!it.hasWon && it.markNumber(i)) {
+                    winningMatrices.add(Pair(i, it))
+                }
             }
-            previousSum = sum
         }
-        return increased
+        val winningMatrix = winningMatrices.last()
+        return winningMatrix.first * winningMatrix.second.unmarkedNumbers().stream().reduce { a, b -> a + b }.get()
     }
 
     // test if implementation meets criteria from the description, like:
     val testInput = readInput("Day04_test")
     val part1 = part1(testInput)
-    println(part1)
+    val part2 = part2(testInput)
     check(part1 == 4512)
+    check(part2 == 1924)
 
     val input = readInput("Day04")
     println(part1(input))
-//    println(part2(input))
+    println(part2(input))
 }
